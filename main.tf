@@ -220,6 +220,52 @@ resource "azurerm_firewall" "FireWall-Test" {
   }
 }
 
+resource "azurerm_route_table" "DMZ-RT" {
+  name                          = "DMZ-RoutTable"
+  location                      = "${var.location}"
+  resource_group_name           = "${azurerm_resource_group.RG-DNAT-Test.name}"
+  disable_bgp_route_propagation = false
+
+  route {
+    name           = "route1"
+    address_prefix = "0.0.0.0/0"
+    next_hop_type  = "virtualAppliance"
+  }
+
+  tags {
+    environment = "Firewall Testing "
+  }
+}
+
+resource "azurerm_subnet_route_table_association" "SN-ASS-DMZ" {
+  subnet_id      = "${azurerm_subnet.SN-DMZ-01.id}"
+  route_table_id = "${azurerm_route_table.DMZ-RT.id}"
+}
+
+
+
+resource "azurerm_route_table" "ITN-RT" {
+  name                          = "INT-RoutTable"
+  location                      = "${var.location}"
+  resource_group_name           = "${azurerm_resource_group.RG-DNAT-Test.name}"
+  disable_bgp_route_propagation = false
+
+  route {
+    name           = "route1"
+    address_prefix = "0.0.0.0/0"
+    next_hop_type  = "virtualAppliance"
+  }
+
+  tags {
+    environment = "Firewall Testing "
+  }
+}
+
+resource "azurerm_subnet_route_table_association" "SN-ASS-INT" {
+  subnet_id      = "${azurerm_subnet.SN-VNET-01.id}"
+  route_table_id = "${azurerm_route_table.ITN-RT.id}"
+}
+
 output "FWPrivate-IP" {
   value = "${azurerm_firewall.FireWall-Test.private_ip_address_allocation.id}"
 }
